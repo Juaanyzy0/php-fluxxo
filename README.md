@@ -60,16 +60,19 @@ El modelo de datos se compone de **14 tablas principales** organizadas en **4 bl
 
 ## ⚙️ Requisitos Previos
 
-Asegúrate de contar con las siguientes herramientas instaladas en tu entorno local (recomendado **WSL 2 con Ubuntu 24.04+**):
+Puedes ejecutar el proyecto tanto en **WSL / Ubuntu** como directamente en **Windows (sin WSL)**. Asegúrate de contar con:
 
-- **WSL (Ubuntu)** *(para entornos Windows)*
 - **PHP** `>= 8.3` con las extensiones: `pdo_mysql`, `mbstring`, `xml`, `curl`, `zip`, `openssl`, `bcmath`, `fileinfo`
 - **Composer** `>= 2.7`
 - **MySQL** `>= 8.0`
 - **Redis** *(para caché, colas y broadcasting con Reverb)*
 - **Git** `>= 2.30`
 
-Puedes verificar rápidamente tu entorno en WSL Ubuntu con:
+Según tu sistema operativo:
+- **WSL / Ubuntu (recomendado):** WSL 2 con Ubuntu 24.04+ y los servicios nativos de PHP y MySQL.
+- **Windows (sin WSL):** **Laragon** *(recomendado)* o **XAMPP** (con PHP 8.3+ y MySQL 8+) + **Composer** + **Git**.
+
+Puedes verificar rápidamente tu entorno con:
 
 ```bash
 php -v
@@ -82,73 +85,136 @@ git --version
 
 ## 🚀 Instalación y Configuración Local
 
-Sigue estos pasos para levantar el proyecto en tu máquina local:
+Elige la guía correspondiente a tu entorno de desarrollo:
 
-### 1. Clonar el repositorio
+### 🐧 Opción A: WSL / Ubuntu
 
-```bash
-git clone https://github.com/<organizacion-o-usuario>/php-fluxxo.git
-cd php-fluxxo
-```
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/Juaanyzy0/php-fluxxo.git
+   cd php-fluxxo
+   ```
 
-### 2. Instalar dependencias de PHP
+2. **Instalar dependencias de PHP:**
+   ```bash
+   composer install
+   ```
 
-```bash
-composer install
-```
+3. **Configurar las variables de entorno y generar la llave:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-### 3. Configurar las variables de entorno
+4. **Verificar MySQL y crear la base de datos y usuario local:**
+   ```bash
+   sudo service mysql start
+   ```
+   Crea la base de datos `fluxxo` y un usuario dedicado en MySQL (para evitar errores con `auth_socket` de `root` en Ubuntu):
+   ```sql
+   CREATE DATABASE fluxxo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE USER 'fluxxo_user'@'127.0.0.1' IDENTIFIED BY 'fluxxo_pass';
+   GRANT ALL PRIVILEGES ON fluxxo.* TO 'fluxxo_user'@'127.0.0.1';
+   FLUSH PRIVILEGES;
+   ```
+   Verifica las credenciales en `.env`:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=fluxxo
+   DB_USERNAME=fluxxo_user
+   DB_PASSWORD=fluxxo_pass
+   ```
 
-Copia el archivo de ejemplo y genera la clave de la aplicación:
+5. **Ejecutar las migraciones:**
+   ```bash
+   php artisan migrate
+   ```
 
-```bash
-cp .env.example .env
-php artisan key:generate
-```
+6. **Iniciar el servidor de desarrollo:**
+   ```bash
+   php artisan serve
+   ```
+   La aplicación quedará disponible en `http://localhost:8000`.
 
-### 4. Configurar la base de datos MySQL
+---
 
-Crea la base de datos `fluxxo` en tu instancia local de MySQL:
+### 🪟 Opción B: Windows (sin WSL)
 
-```sql
-CREATE DATABASE fluxxo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+#### Requisitos recomendados para Windows
+- **Laragon** *(recomendado por su facilidad para gestionar PHP 8.3+, MySQL 8+ y Composer)* o **XAMPP** (con PHP 8.3+ y MySQL 8+).
+- **Composer** instalado globalmente y disponible en el `PATH`.
+- **Git** (incluye **Git Bash**; también puedes usar **PowerShell** o **CMD**).
 
-Edita el archivo `.env` y configura tus credenciales locales de MySQL:
+#### Paso a paso (PowerShell / CMD / Git Bash)
 
-```env
-APP_NAME=Fluxxo
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
+1. **Clonar el repositorio y entrar a la carpeta:**
+   ```bash
+   git clone https://github.com/Juaanyzy0/php-fluxxo.git
+   cd php-fluxxo
+   ```
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=fluxxo
-DB_USERNAME=tu_usuario_mysql
-DB_PASSWORD=tu_password_mysql
-```
+2. **Instalar dependencias de PHP:**
+   ```bash
+   composer install
+   ```
 
-### 5. Ejecutar las migraciones
+3. **Copiar el archivo de variables de entorno:**
+   - En **CMD / PowerShell**:
+     ```powershell
+     copy .env.example .env
+     ```
+   - En **Git Bash**:
+     ```bash
+     cp .env.example .env
+     ```
 
-```bash
-php artisan migrate
-```
+4. **Generar la llave de la aplicación:**
+   ```bash
+   php artisan key:generate
+   ```
 
-> Para reiniciar el esquema desde cero en desarrollo local, puedes ejecutar `php artisan migrate:fresh`.
+5. **Iniciar MySQL y crear la base de datos `fluxxo`:**
+   - Abre el panel de **Laragon** o **XAMPP** e inicia el servicio de **MySQL**.
+   - Crea una base de datos vacía llamada `fluxxo` (cotejamiento `utf8mb4_unicode_ci`) desde **phpMyAdmin** (o HeidiSQL / consola de MySQL):
+     ```sql
+     CREATE DATABASE fluxxo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+     ```
 
-### 6. Iniciar el servidor de desarrollo
+6. **Configurar `.env` con tus credenciales locales de Windows:**
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=fluxxo
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
 
-```bash
-php artisan serve
-```
+7. **Ejecutar las migraciones:**
+   ```bash
+   php artisan migrate
+   ```
 
-La aplicación quedará disponible en `http://localhost:8000`.
+8. **Levantar el servidor local:**
+   ```bash
+   php artisan serve
+   ```
+   La aplicación quedará disponible en `http://localhost:8000`.
+
+> [!NOTE]
+> **Credenciales locales sin conflictos:** El archivo `.env` está incluido en `.gitignore`, por lo que las credenciales locales de cada integrante (ya sea en **Windows** con `root` o en **WSL/Ubuntu** con `fluxxo_user`) nunca se suben al repositorio ni chocan entre sí al hacer `git push` o `git pull`.
 
 ### Comandos útiles
 
 ```bash
+# Reiniciar el esquema desde cero en desarrollo local
+php artisan migrate:fresh
+
+# Verificar la conexión activa a MySQL
+php artisan db:show
+
 # Ejecutar la suite de pruebas
 php artisan test
 
