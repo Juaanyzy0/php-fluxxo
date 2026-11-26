@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('clientes', function (Blueprint $table) {
+            $table->id();
+            $table->string('cedula', 30)->unique();
+            $table->string('nombre', 150);
+            $table->string('telefono', 20);
+            $table->string('correo', 150)->nullable();
+            $table->enum('canal_notificacion_preferido', ['sms', 'correo', 'whatsapp', 'push'])->default('sms');
+            $table->integer('puntaje_reputacion')->default(100);
+            $table->timestamp('bloqueado_hasta')->nullable();
+            $table->enum('estado', ['activo', 'penalizado', 'inactivo'])->default('activo');
+            $table->timestamp('fecha_registro')->useCurrent();
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('clientes');
+    }
+};

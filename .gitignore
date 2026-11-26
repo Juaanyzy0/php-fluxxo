@@ -7,6 +7,8 @@
 .phpunit.result.cache
 /.codex
 /.cursor/
+/.claude/
+CLAUDE.MD
 /.idea
 /.nova
 /.phpunit.cache

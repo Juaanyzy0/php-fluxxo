@@ -35,4 +35,6 @@ return [
         ],
     ],
 
+    'otp_sms_simulation' => filter_var(env('OTP_SMS_SIMULATION', true), FILTER_VALIDATE_BOOL),
+
 ];
